@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Audio Tool Kit</title>
+<link rel="stylesheet" href="styles.css?v=15" />
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="brand-mark"></div>
+      <div class="brand-text">
+        <h1><span class="brand-prefix">Audio Tool Kit</span> <span id="toolName">Mono / Stereo</span></h1>
+      </div>
+    </div>
+    <div class="mode-toggle" id="eqModeToggle" role="tablist" style="display:none;">
+      <button id="modePlay" class="active" role="tab">Play</button>
+      <button id="modeQuiz" role="tab">Quiz</button>
+    </div>
+  </header>
+
+  <!-- Side menu (hamburger) -->
+  <div class="menu-overlay" id="menuOverlay"></div>
+  <nav class="side-menu" id="sideMenu" inert>
+    <div class="menu-header">
+      <span class="menu-title">Audio Tool Kit</span>
+      <button class="menu-close" id="menuCloseBtn" aria-label="Close menu">×</button>
+    </div>
+    <button class="menu-item active" data-tool="monoStereo">
+      <span class="menu-icon">🔊</span>
+      <span class="menu-label">Mono / Stereo</span>
+    </button>
+    <button class="menu-item" data-tool="eq">
+      <span class="menu-icon">🎛</span>
+      <span class="menu-label">EQ Trainer</span>
+    </button>
+    <button class="menu-item" data-tool="reverb">
+      <span class="menu-icon">🏛</span>
+      <span class="menu-label">Reverb</span>
+    </button>
+    <button class="menu-item" data-tool="premaster">
+      <span class="menu-icon">🏔</span>
+      <span class="menu-label">Music Mountain Pre-Master</span>
+    </button>
+  </nav>
+
+  <!-- ============================================================= -->
+  <!-- TOOL: EQ TRAINER                                                -->
+  <!-- ============================================================= -->
+  <div id="eqTool" class="tool-panel">
+
+    <!-- PLAY MODE -->
+    <section id="playPanel">
+      <div class="tool-layout">
+        <div class="card source-card">
+          <h2>Audio Source</h2>
+          <div class="source-row">
+            <div class="dropzone" id="dropzone">
+              <div class="dz-icon" id="dropzoneIcon">🎵</div>
+              <div class="dz-title" id="dropzoneTitle">Drop an audio file</div>
+              <div class="dz-hint" id="dropzoneHint">or click to browse</div>
+              <input type="file" id="fileInput" accept="audio/*" hidden />
+            </div>
+            <div class="sample-list" id="sampleList">
+              <button class="sample-btn" data-source="pink">
+                <span class="play-icon">▶</span>
+                <span class="sample-name">Pink Noise</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-layout-right">
+          <div class="card">
+            <div class="eq-display">
+              <canvas id="eqCanvas"></canvas>
+            </div>
+            <div class="eq-controls">
+              <div class="knob-group freq">
+                <div class="knob-label">
+                  <span class="name">Frequency</span>
+                  <span class="value"><span id="freqVal">1</span><span class="unit" id="freqUnit">kHz</span></span>
+                </div>
+                <input type="range" id="freqSlider" min="0" max="7" value="4" step="1" list="freqStops" />
+                <datalist id="freqStops">
+                  <option value="0"></option><option value="1"></option><option value="2"></option>
+                  <option value="3"></option><option value="4"></option><option value="5"></option>
+                  <option value="6"></option><option value="7"></option>
+                </datalist>
+              </div>
+              <div class="knob-group gain">
+                <div class="knob-label">
+                  <span class="name">Gain</span>
+                  <span class="value"><span id="gainVal">0</span><span class="unit">dB</span></span>
+                </div>
+                <input type="range" id="gainSlider" min="-18" max="18" value="0" step="1" />
+              </div>
+              <div class="knob-group q">
+                <div class="knob-label">
+                  <span class="name">Q</span>
+                  <span class="value"><span id="qVal">1</span></span>
+                </div>
+                <input type="range" id="qSlider" min="1" max="18" value="1" step="1" />
+              </div>
+              <button id="bypassBtn" class="bypass-btn">Bypass</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUIZ MODE -->
+    <section id="quizPanel" class="quiz-panel">
+      <div class="tool-layout">
+        <div class="card source-card">
+          <h2>Audio Source</h2>
+          <div class="source-row quiz-source-row">
+            <div class="dropzone" id="quizDropzone">
+              <div class="dz-icon" id="quizDropzoneIcon">🎵</div>
+              <div class="dz-title" id="quizDropzoneTitle">Drop an audio file</div>
+              <div class="dz-hint" id="quizDropzoneHint">or click to browse</div>
+              <input type="file" id="quizFileInput" accept="audio/*" hidden />
+            </div>
+            <div class="sample-list" id="quizSampleList">
+              <button class="sample-btn" data-qsource="pink">
+                <span class="play-icon">▶</span>
+                <span class="sample-name">Pink Noise</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="difficulty-row">
+            <span class="diff-label">Difficulty</span>
+            <div class="diff-group" id="diffGroup">
+              <button class="diff-btn" data-diff="easy">Easy</button>
+              <button class="diff-btn active" data-diff="medium">Medium</button>
+              <button class="diff-btn" data-diff="hard">Hard</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tool-layout-right">
+          <div class="card">
+            <div class="quiz-header">
+              <div class="left">
+                <h2>Quiz Mode</h2>
+                <p>Which frequency is boosted?</p>
+              </div>
+              <div class="score">
+                <div class="pill" id="scorePill">0 / 0</div>
+              </div>
+            </div>
+
+            <div class="dry-eq-toggle" id="dryEqToggle" role="switch" aria-checked="false" tabindex="0" aria-disabled="true">
+              <span class="toggle-label left">Dry</span>
+              <div class="toggle-track"><div class="toggle-knob"></div></div>
+              <span class="toggle-label right">EQ'd</span>
+            </div>
+
+            <div class="freq-guess" id="freqGuess"></div>
+
+            <div class="quiz-actions">
+              <div class="feedback" id="quizFeedback">Select a source to start.</div>
+              <button class="btn primary" id="quizAction" disabled>New Question</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- TOOL: MONO / STEREO CONVERTER                                   -->
+  <!-- ============================================================= -->
+  <div id="monoStereoTool" class="tool-panel" style="display:none;">
+
+    <div class="tool-layout">
+      <div class="card source-card">
+        <h2>Audio Source</h2>
+        <div class="source-row">
+          <div class="dropzone" id="msDropzone">
+            <div class="dz-icon" id="msDropzoneIcon">🎵</div>
+            <div class="dz-title" id="msDropzoneTitle">Drop an audio file</div>
+            <div class="dz-hint" id="msDropzoneHint">or click to browse</div>
+            <input type="file" id="msFileInput" accept="audio/*" hidden />
+          </div>
+          <div class="sample-list" id="msSampleList">
+            <!-- populated from script -->
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-layout-right">
+        <div class="card ms-intro">
+          <h2>Mono / Stereo</h2>
+          <p class="ms-lede">Flip the stereo image to a summed mono mix. What do you hear?</p>
+        </div>
+
+        <div class="card ms-viz-card">
+          <div class="ms-viz">
+            <canvas id="msCanvas"></canvas>
+            <div class="ms-viz-label left">L</div>
+            <div class="ms-viz-label right">R</div>
+            <div class="ms-viz-hint">What am I looking at here?? This is a Stereoscope, a tool to visually plot how wide or narrow the stereo image is. The more horizontal the spread, the wider the stereo image. A straight vertical line means the left and right channels are identical (mono).</div>
+          </div>
+          <div class="dry-eq-toggle ms-toggle" id="monoToggle" role="switch" aria-checked="false" tabindex="0" aria-disabled="true">
+            <span class="toggle-label left">Stereo</span>
+            <div class="toggle-track"><div class="toggle-knob"></div></div>
+            <span class="toggle-label right">Mono</span>
+          </div>
+          <p class="ms-status" id="msStatus">Select a source to start.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- TOOL: CONVOLUTION REVERB                                        -->
+  <!-- ============================================================= -->
+  <div id="reverbTool" class="tool-panel" style="display:none;">
+
+    <div class="tool-layout">
+      <div class="card source-card">
+        <h2>Audio Source</h2>
+        <div class="source-row">
+          <div class="dropzone" id="reverbDropzone">
+            <div class="dz-icon" id="reverbDropzoneIcon">🎵</div>
+            <div class="dz-title" id="reverbDropzoneTitle">Drop an audio file</div>
+            <div class="dz-hint" id="reverbDropzoneHint">or click to browse</div>
+            <input type="file" id="reverbFileInput" accept="audio/*" hidden />
+          </div>
+          <div class="sample-list" id="reverbSampleList">
+            <!-- populated from script -->
+          </div>
+        </div>
+      </div>
+
+      <div class="tool-layout-right">
+        <div class="card ms-intro">
+          <h2>Reverb</h2>
+          <p class="ms-lede">Place your audio inside Sprague Hall, Woolsey Hall, or both at once. Slide to add space, then export the result.</p>
+        </div>
+
+        <div class="card reverb-halls-card">
+      <div class="reverb-halls">
+        <div class="hall-card" data-hall="sprague">
+          <div class="hall-image">
+            <img src="https://ysm-assets-for-livestream.s3.us-east-1.amazonaws.com/SpragueWoolseyRenders/Sprague+Render.png" alt="Sprague Hall"
+                 onerror="this.classList.add('hall-image-missing'); this.removeAttribute('src');" />
+            <div class="hall-image-fallback" aria-hidden="true">
+              <svg viewBox="0 0 100 70" preserveAspectRatio="xMidYMid slice">
+                <defs>
+                  <linearGradient id="spragueWall" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#f7f1e6"/>
+                    <stop offset="1" stop-color="#ebe1cb"/>
+                  </linearGradient>
+                  <linearGradient id="spragueWainscot" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#efe6d3"/>
+                    <stop offset="1" stop-color="#ddd0b4"/>
+                  </linearGradient>
+                </defs>
+
+                <!-- Navy curtain backdrop (only visible through arch openings) -->
+                <rect width="100" height="70" fill="#1b2540"/>
+
+                <!-- Offwhite architecture: side walls + inter-arch columns -->
+                <rect x="0" y="0" width="12" height="54" fill="url(#spragueWall)"/>
+                <rect x="33" y="0" width="4" height="54" fill="url(#spragueWall)"/>
+                <rect x="63" y="0" width="4" height="54" fill="url(#spragueWall)"/>
+                <rect x="88" y="0" width="12" height="54" fill="url(#spragueWall)"/>
+
+                <!-- Arch hoods: offwhite fills above each semicircular opening -->
+                <!-- Side arches: radius 10.5, peak at y=26.5 -->
+                <path d="M12 37 L12 0 L33 0 L33 37 A10.5 10.5 0 0 0 12 37 Z"
+                      fill="url(#spragueWall)"/>
+                <path d="M67 37 L67 0 L88 0 L88 37 A10.5 10.5 0 0 0 67 37 Z"
+                      fill="url(#spragueWall)"/>
+                <!-- Center arch: taller, radius 13, peak at y=9 -->
+                <path d="M37 22 L37 9 L63 9 L63 22 A13 13 0 0 0 37 22 Z"
+                      fill="url(#spragueWall)"/>
+
+                <!-- Base molding above wainscoting -->
+                <rect x="0" y="54" width="100" height="1.5" fill="#c9ba98"/>
+
+                <!-- Wainscoting (offwhite — the old navy rect was wrong) -->
+                <rect x="0" y="55.5" width="100" height="14.5" fill="url(#spragueWainscot)"/>
+
+                <!-- Wainscot vertical panel lines -->
+                <g stroke="#c1b391" stroke-width="0.3" opacity="0.7">
+                  <line x1="7" y1="58" x2="7" y2="68"/>
+                  <line x1="17" y1="58" x2="17" y2="68"/>
+                  <line x1="27" y1="58" x2="27" y2="68"/>
+                  <line x1="37" y1="58" x2="37" y2="68"/>
+                  <line x1="44" y1="58" x2="44" y2="68"/>
+                  <line x1="50" y1="58" x2="50" y2="68"/>
+                  <line x1="56" y1="58" x2="56" y2="68"/>
+                  <line x1="63" y1="58" x2="63" y2="68"/>
+                  <line x1="73" y1="58" x2="73" y2="68"/>
+                  <line x1="83" y1="58" x2="83" y2="68"/>
+                  <line x1="93" y1="58" x2="93" y2="68"/>
+                </g>
+
+                <!-- Top cornice/frieze: two horizontal rails + pierced dot pattern on sides -->
+                <g stroke="#c9ba98" stroke-width="0.25" opacity="0.85">
+                  <line x1="0" y1="2" x2="100" y2="2"/>
+                  <line x1="0" y1="5" x2="100" y2="5"/>
+                </g>
+                <g fill="#b8a97f" opacity="0.75">
+                  <circle cx="4" cy="3.5" r="0.3"/><circle cx="8" cy="3.5" r="0.3"/>
+                  <circle cx="12" cy="3.5" r="0.3"/><circle cx="16" cy="3.5" r="0.3"/>
+                  <circle cx="20" cy="3.5" r="0.3"/><circle cx="24" cy="3.5" r="0.3"/>
+                  <circle cx="28" cy="3.5" r="0.3"/><circle cx="32" cy="3.5" r="0.3"/>
+                  <circle cx="72" cy="3.5" r="0.3"/><circle cx="76" cy="3.5" r="0.3"/>
+                  <circle cx="80" cy="3.5" r="0.3"/><circle cx="84" cy="3.5" r="0.3"/>
+                  <circle cx="88" cy="3.5" r="0.3"/><circle cx="92" cy="3.5" r="0.3"/>
+                  <circle cx="96" cy="3.5" r="0.3"/>
+                </g>
+
+                <!-- Corinthian capitals (simplified blocks with acanthus hint) at arch springs -->
+                <g fill="#dfd2ae" stroke="#b0a27f" stroke-width="0.15">
+                  <rect x="10" y="35.5" width="4" height="2"/>
+                  <rect x="31" y="35.5" width="4" height="2"/>
+                  <rect x="65" y="35.5" width="4" height="2"/>
+                  <rect x="86" y="35.5" width="4" height="2"/>
+                  <rect x="35" y="20.5" width="4" height="2"/>
+                  <rect x="61" y="20.5" width="4" height="2"/>
+                </g>
+                <!-- Capital "leaves" — tiny curves under each capital -->
+                <g stroke="#b0a27f" stroke-width="0.2" fill="none" opacity="0.8">
+                  <path d="M10.5 37 Q12 36.5 13.5 37"/>
+                  <path d="M31.5 37 Q33 36.5 34.5 37"/>
+                  <path d="M65.5 37 Q67 36.5 68.5 37"/>
+                  <path d="M86.5 37 Q88 36.5 89.5 37"/>
+                  <path d="M35.5 22 Q37 21.5 38.5 22"/>
+                  <path d="M61.5 22 Q63 21.5 64.5 22"/>
+                </g>
+
+                <!-- Rosette medallions in spandrels beside the side arches -->
+                <g fill="#d7c9a3">
+                  <circle cx="7" cy="25" r="1"/>
+                  <circle cx="94" cy="25" r="1"/>
+                </g>
+
+                <!-- ============ CENTRAL PEDIMENT ============ -->
+                <!-- Ornate broken-scroll pediment with scroll volutes flanking a
+                     bearded keystone mascaron (the man's face from the photo). -->
+                <g>
+                  <!-- Pediment base cap across the top of the center arch -->
+                  <path d="M35 9 H65 L62 6 H38 Z"
+                        fill="url(#spragueWall)" stroke="#b0a27f" stroke-width="0.2"/>
+
+                  <!-- Left scroll volute: curved S-shape ending in a spiral -->
+                  <path d="M42 8 Q39 7 39 4.5 Q39 2 42 2 Q44.5 2 44.5 4 Q44.5 5.5 43 5.5
+                           Q42 5.5 42 4.5 Q42 3.8 42.7 3.8"
+                        fill="url(#spragueWall)" stroke="#a99b78" stroke-width="0.25"/>
+                  <!-- Right scroll volute (mirrored) -->
+                  <path d="M58 8 Q61 7 61 4.5 Q61 2 58 2 Q55.5 2 55.5 4 Q55.5 5.5 57 5.5
+                           Q58 5.5 58 4.5 Q58 3.8 57.3 3.8"
+                        fill="url(#spragueWall)" stroke="#a99b78" stroke-width="0.25"/>
+
+                  <!-- Garland swags hanging from each scroll toward the face -->
+                  <g stroke="#b0a27f" stroke-width="0.3" fill="none" opacity="0.8">
+                    <path d="M43.5 6 Q46 7.5 48 6.5"/>
+                    <path d="M56.5 6 Q54 7.5 52 6.5"/>
+                  </g>
+
+                  <!-- Keystone mascaron: bearded man's face -->
+                  <!-- Face shape -->
+                  <ellipse cx="50" cy="5.2" rx="2" ry="2.6"
+                           fill="#eadfc3" stroke="#a99b78" stroke-width="0.2"/>
+                  <!-- Brow / hair swept back -->
+                  <path d="M47.9 3.4 Q50 2.3 52.1 3.4 Q50 2.7 47.9 3.4 Z"
+                        fill="#9d8e6a"/>
+                  <!-- Eyebrows -->
+                  <path d="M48.7 4.2 Q49.3 3.9 49.9 4.2" stroke="#7a6d4c"
+                        stroke-width="0.18" fill="none"/>
+                  <path d="M50.1 4.2 Q50.7 3.9 51.3 4.2" stroke="#7a6d4c"
+                        stroke-width="0.18" fill="none"/>
+                  <!-- Eyes -->
+                  <circle cx="49.3" cy="4.7" r="0.18" fill="#4a3f24"/>
+                  <circle cx="50.7" cy="4.7" r="0.18" fill="#4a3f24"/>
+                  <!-- Nose (simple vertical tick) -->
+                  <path d="M50 5 L50 5.7" stroke="#a99b78" stroke-width="0.15"
+                        fill="none"/>
+                  <!-- Mustache -->
+                  <path d="M48.6 6 Q50 6.4 51.4 6" stroke="#8a7d5a"
+                        stroke-width="0.3" fill="none"/>
+                  <!-- Beard -->
+                  <path d="M48.3 6.3 Q50 8.3 51.7 6.3 Q50 7.6 48.3 6.3 Z"
+                        fill="#9d8e6a"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="hall-name">Sprague Hall</div>
+          <div class="knob-group wet">
+            <div class="knob-label">
+              <span class="name">Amount</span>
+              <span class="value"><span id="spragueVal">0</span><span class="unit">%</span></span>
+            </div>
+            <input type="range" id="spragueSlider" min="0" max="100" value="0" step="1" />
+            <div class="wet-scale"><span>Dry</span><span>Wet</span></div>
+          </div>
+        </div>
+
+        <div class="hall-card" data-hall="woolsey">
+          <div class="hall-image">
+            <img src="https://ysm-assets-for-livestream.s3.us-east-1.amazonaws.com/SpragueWoolseyRenders/Woolsey+Render.png" alt="Woolsey Hall"
+                 onerror="this.classList.add('hall-image-missing'); this.removeAttribute('src');" />
+            <div class="hall-image-fallback" aria-hidden="true">
+              <svg viewBox="0 0 100 70" preserveAspectRatio="xMidYMid slice">
+                <defs>
+                  <linearGradient id="woolseyBg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#f3ecdb"/>
+                    <stop offset="1" stop-color="#e5dbc0"/>
+                  </linearGradient>
+                </defs>
+                <rect width="100" height="70" fill="url(#woolseyBg)"/>
+                <path d="M10 60 V28 Q10 10 50 10 Q90 10 90 28 V60 Z" fill="none" stroke="#c9b57a" stroke-width="2"/>
+                <g fill="#8a816c">
+                  <rect x="30" y="25" width="2" height="30"/>
+                  <rect x="34" y="22" width="2" height="33"/>
+                  <rect x="38" y="18" width="2" height="37"/>
+                  <rect x="42" y="15" width="2" height="40"/>
+                  <rect x="46" y="13" width="2" height="42"/>
+                  <rect x="50" y="12" width="2" height="43"/>
+                  <rect x="54" y="13" width="2" height="42"/>
+                  <rect x="58" y="15" width="2" height="40"/>
+                  <rect x="62" y="18" width="2" height="37"/>
+                  <rect x="66" y="22" width="2" height="33"/>
+                  <rect x="70" y="25" width="2" height="30"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="hall-name">Woolsey Hall</div>
+          <div class="knob-group wet">
+            <div class="knob-label">
+              <span class="name">Amount</span>
+              <span class="value"><span id="woolseyVal">0</span><span class="unit">%</span></span>
+            </div>
+            <input type="range" id="woolseySlider" min="0" max="100" value="0" step="1" />
+            <div class="wet-scale"><span>Dry</span><span>Wet</span></div>
+          </div>
+        </div>
+      </div>
+
+          <p class="ms-status" id="reverbStatus">Loading impulse responses…</p>
+          <button class="btn primary reverb-export" id="reverbExport" disabled>Export as .wav</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================= -->
+  <!-- TOOL: MUSIC MOUNTAIN PRE-MASTER                                 -->
+  <!-- ============================================================= -->
+  <div id="premasterTool" class="tool-panel" style="display:none;">
+
+    <div class="pm-wrap">
+      <div class="pm-header">
+        <img class="pm-logo" src="https://musicmountain.org/storage/setting_photo/musicmountain/a1a5e1e52085ac47f4768dc5ff084c356d5e0b2c.webp" alt="Music Mountain" onerror="this.style.display='none';" />
+        <p class="ms-lede">Upload an audio file and export a pre-mastered .mp3.</p>
+      </div>
+
+      <div class="pm-layout">
+        <div class="card pm-card">
+          <h2>Upload</h2>
+          <div class="dropzone pm-dropzone" id="pmDropzone">
+            <div class="dz-icon" id="pmDropzoneIcon">🎵</div>
+            <div class="dz-title" id="pmDropzoneTitle">Drop an audio file</div>
+            <div class="dz-hint" id="pmDropzoneHint">or click to browse</div>
+            <input type="file" id="pmFileInput" accept="audio/*" hidden />
+          </div>
+        </div>
+
+        <div class="card pm-card">
+          <h2>Process</h2>
+          <div class="pm-process-body">
+            <p class="ms-status" id="pmStatus">Upload an audio file to start.</p>
+            <div class="pm-elapsed" id="pmElapsed" hidden>Elapsed <span id="pmElapsedTime">0:00</span></div>
+            <div class="pm-progress" id="pmProgress" hidden>
+              <div class="pm-progress-fill" id="pmProgressFill"></div>
+            </div>
+          </div>
+          <button class="btn primary reverb-export" id="pmExport" disabled>Process &amp; Export .mp3</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+<script src="lame.min.js"></script>
+<script src="script.js?v=16"></script>
+</body>
+</html>
