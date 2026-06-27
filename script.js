@@ -50,7 +50,7 @@ let woolseyBuffer = null;
 // origin). If the bucket ever goes offline, `window.IR_DATA_URL_*` can be set
 // in a separate file to fall back to embedded base64.
 const IR_URL_SPRAGUE = (typeof window !== "undefined" && window.IR_DATA_URL_SPRAGUE)
-  || "https://ysm-assets-for-livestream.s3.us-east-1.amazonaws.com/impulse_responses/Sprague_IR.mp3";
+  || "Sprague_IR.mp3";
 const IR_URL_WOOLSEY = (typeof window !== "undefined" && window.IR_DATA_URL_WOOLSEY)
   || "https://ysm-assets-for-livestream.s3.us-east-1.amazonaws.com/impulse_responses/Woolsey_IR.mp3";
 let currentSource = null;
@@ -1997,14 +1997,21 @@ function pmLimitSegment(chans, peek, st) {
  * a throwaway OfflineAudioContext at the file's rate to keep the convolution
  * exact). Raw bytes are fetched once and cached; decodes are cached per rate.
  */
+const IR_URL_SPRAGUE_FALLBACK = "https://ysm-assets-for-livestream.s3.us-east-1.amazonaws.com/impulse_responses/Sprague_IR.mp3";
+
 let pmIRRawPromise = null;
 const pmIRCache = new Map(); // sampleRate -> AudioBuffer
 function pmWarmSpragueIR() {
   if (!pmIRRawPromise) {
-    pmIRRawPromise = fetch(IR_URL_SPRAGUE).then((r) => {
-      if (!r.ok) throw new Error("couldn't download the Sprague impulse response");
-      return r.arrayBuffer();
-    });
+    pmIRRawPromise = fetch(IR_URL_SPRAGUE)
+      .then((r) => {
+        if (!r.ok) throw new Error("local IR not found");
+        return r.arrayBuffer();
+      })
+      .catch(() => fetch(IR_URL_SPRAGUE_FALLBACK).then((r) => {
+        if (!r.ok) throw new Error("couldn't download the Sprague impulse response");
+        return r.arrayBuffer();
+      }));
     pmIRRawPromise.catch(() => { pmIRRawPromise = null; });
   }
   return pmIRRawPromise;
